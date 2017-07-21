@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Tracker</h1>
+
+<div id="googleMap" style="width:100%;height:400px;"></div>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXhjgFNCiJwmXfhhQOaaIcF6mR8TG16O4"></script>
+<!-- <script type="text/javascript"
+src="https://maps.googleapis.com/maps/api/js?v=3"></script> -->
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+var map = null;
+var gmarkers = [];
+var firstData = true;
+var uluru = {lat:-25.001,lng:105.02};
+
+update_map = function (data) {
+    var bounds = new google.maps.LatLngBounds();
+
+        var latLng = new google.maps.LatLng(data.lat, data.lng);
+        bounds.extend(latLng);
+        if (gmarkers && gmarkers.setPosition)
+        {
+            gmarkers.setPosition(latLng);
+        } else 
+        {
+                var marker = new google.maps.Marker({
+                position: latLng,
+                map: map,
+                icon: 'images/truck1.png',
+               
+            });
+            (function (marker, data) {
+
+            })(marker, data);
+            gmarkers = marker;
+        }
+        map.fitBounds(bounds);
+        map.setZoom(17);
+        map.panTo(bounds);
+
+};
+
+function redraw(){
+        $.ajax({
+            url: "http://198.11.235.58:8380/tracker/CoordinateReaderServlet?read=Y",
+            dataType: "xml",
+            success: function(data) {console.log("res"+data);
+            xmlDoc =data,
+          $xml = $( xmlDoc ),
+          $latitude = $xml.find( "latitude" );
+          $longitude = $xml.find( "longitude" );
+          uluru.lng = parseFloat($longitude.text());
+          uluru.lat = parseFloat($latitude.text());
+          update_map(uluru);
+                },
+                        error: function(data){
+                        console.log(data);}
+        });
+}
+setInterval(redraw,5000);
+function initialize() {
+    var mapOptions = {
+        center: new google.maps.LatLng(35.66, -80.50),
+        zoom: 17,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    map = new google.maps.Map(document.getElementById("googleMap"),
+    mapOptions); 
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+</script>
+</body>
+</html>
